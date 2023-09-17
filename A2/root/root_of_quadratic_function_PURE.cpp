@@ -46,6 +46,14 @@ solve_quadratic_equation(const double a, const double b, const double c) {
 }
 
 int main() {
-    const std::pair<complex, complex> result = solve_quadratic_equation(3, 4, 5);
+    double a = 3;
+    double b = 4;
+    double c = 5;
+
+    const std::pair<complex, complex> result = solve_quadratic_equation(a, b, c);
     std::cout << result.first << ", " << result.second << std::endl;
+
+
+    const std::pair<complex, complex> result2 = solve_quadratic_equation(a, b, c);
+    std::cout << result2.first << ", " << result2.second << std::endl;
 }

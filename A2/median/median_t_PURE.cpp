@@ -58,5 +58,23 @@ int main() {
     std::cout << "Median from vertex B: " << median_b << "\n";
     std::cout << "Median from vertex C: " << median_c << "\n";
 
+
+
+
+
+
+
+    std::cout << "Triangle sides: a = " << a_initial << ", b = " << b_initial << ", c = " << c_initial << "\n";
+
+    const double median_a2 = calculate_median(a_initial, b_initial, c_initial);
+    const double median_b2 = calculate_median(b_initial, c_initial, a_initial);
+    const double median_c2 = calculate_median(c_initial, a_initial, b_initial);
+
+    std::cout << "Medians:\n";
+    std::cout << "Median from vertex A: " << median_a2 << "\n";
+    std::cout << "Median from vertex B: " << median_b2 << "\n";
+    std::cout << "Median from vertex C: " << median_c2 << "\n";
+
+
     return 0;
 }

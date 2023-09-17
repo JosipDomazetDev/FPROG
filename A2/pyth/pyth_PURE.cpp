@@ -51,5 +51,8 @@ int main(int argc, char *argv[])
     const int y = 4;
     const double z = pythagoras(x, y);
     cout << "euklid:" << z << endl;
+
+    const double zz = pythagoras(x, y);
+    cout << "euklid:" << zz << endl;
     return 0;
 }

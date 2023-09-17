@@ -1,68 +1,59 @@
 #include <iostream>
+#include <utility>
+#include <complex>
+#include <cstdint>
 
-// Helper function to calculate square root without using std::sqrt()
-const double square_root(const double x, const double epsilon = 1e-10, const int max_iterations = 1000) {
-    if (x < 0) {
-        return -1; // Invalid input
+typedef std::complex<double> complex;
+
+const double
+square(const double e) {
+    const double dummy = e;
+    const double dummy2 = e;
+    double result = e;
+    for (int i = 1; i < dummy2; i++) {
+        result = result + dummy;
     }
-    if (x == 0) {
-        return 0;
-    }
-
-    double low = 0, high = x;
-    double mid;
-    for (int i = 0; i < max_iterations; ++i) {
-        mid = (low + high) / 2.0;
-        double mid_square = mid * mid;
-
-        if (mid_square > x) {
-            high = mid;
-        } else if (mid_square < x) {
-            low = mid;
-        }
-
-        if (high - low < epsilon) {
-            break;
-        }
-    }
-
-    return mid;
+    return result;
 }
 
-const void calculate_area_and_radii(const double a, const double b, const double c, double& s, double& area, double& circumradius, double& inradius)  {
-    s = (a + b + c) / 2;
-    area = square_root(s * (s - a) * (s - b) * (s - c));
-    inradius = area / s;
-    circumradius = (a * b * c) / (4 * area);
+const inline float squareroot(const float number) {
+    union Conv {
+        float f;
+        uint32_t i;
+    };
+    Conv conv;
+    conv.f = number;
+    conv.i = 0x5f3759df - (conv.i >> 1);
+    conv.f *= 1.5F - (number * 0.5F * conv.f * conv.f);
+    return 1 / conv.f;
 }
 
-const double calculate_distance(const double circumradius, const double inradius)  {
-    return square_root(circumradius * circumradius - 2 * circumradius * inradius);
+const std::pair<complex, complex>
+solve_quadratic_equation(const double a, const double b, const double c) {
+    const double b_copy = b / a;
+    const double c_copy = c / a;
+    const double discriminant = square(b_copy) - 4 * c_copy;
+    if (discriminant < 0) {
+        return std::make_pair(complex(-b_copy / 2, squareroot(-discriminant) / 2),
+                              complex(-b_copy / 2, -squareroot(-discriminant) / 2));
+    }
+
+    const double root = std::sqrt(discriminant);
+    const double solution1 = (b_copy > 0) ? (-b_copy - root) / 2
+                                          : (-b_copy + root) / 2;
+
+    return std::make_pair(solution1, c_copy / solution1);
 }
 
 int main() {
-    const double a = 3, b = 4, c = 5;
-    std::cout << "Triangle sides: a = " << a << ", b = " << b << ", c = " << c << "\n";
+    double a = 3;
+    double b = 4;
+    double c = 5;
 
-    double s, area, circumradius, inradius, distance;
-    calculate_area_and_radii(a, b, c, s, area, circumradius, inradius);
-    std::cout << "Inradius: " << inradius << "\n";
-    std::cout << "Circumradius: " << circumradius << "\n";
-
-    distance = calculate_distance(circumradius, inradius);
-    std::cout << "Distance between circumcenter and incenter: " << distance << "\n";
-
-    std::cout << "===================" <<"\n";
-
-    calculate_area_and_radii(a, b, c, s, area, circumradius, inradius);
-    std::cout << "Inradius: " << inradius << "\n";
-    std::cout << "Circumradius: " << circumradius << "\n";
-
-    distance = calculate_distance(circumradius, inradius);
-    std::cout << "Distance between circumcenter and incenter: " << distance << "\n";
+    const std::pair<complex, complex> result = solve_quadratic_equation(a, b, c);
+    std::cout << result.first << ", " << result.second << std::endl;
 
 
-
-
-    return 0;
+    const std::pair<complex, complex> result2 = solve_quadratic_equation(a, b, c);
+    std::cout << result2.first << ", " << result2.second << std::endl;
 }
