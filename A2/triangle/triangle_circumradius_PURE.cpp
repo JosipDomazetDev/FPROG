@@ -1,7 +1,7 @@
 #include <iostream>
+#include <functional>
 
-// Helper function to calculate square root without using std::sqrt()
-const double square_root(const double x, const double epsilon = 1e-10, const int max_iterations = 1000) {
+const auto square_root = [](const double x, const double epsilon = 1e-10, const int max_iterations = 1000) -> double {
     if (x < 0) {
         return -1; // Invalid input
     }
@@ -28,6 +28,35 @@ const double square_root(const double x, const double epsilon = 1e-10, const int
     }
 
     return mid;
+};
+
+template<class, class = std::void_t<> >
+struct
+needs_unapply : std::true_type {
+};
+
+template<class T>
+struct
+needs_unapply<T, std::void_t<decltype(std::declval<T>()())>> : std::false_type {
+};
+
+template<typename F>
+auto
+curry(F &&f) {
+    /// Check if f() is a valid function call. If not we need
+    /// to curry at least one argument:
+    if constexpr (needs_unapply<decltype(f)>::value) {
+        return [=](auto &&x) {
+            return curry(
+                    [=](auto &&...xs) -> decltype(f(x, xs...)) {
+                        return f(x, xs...);
+                    }
+            );
+        };
+    } else {
+        /// If 'f()' is a valid call, just call it, we are done.
+        return f();
+    }
 }
 
 const double calculate_circumradius(const double a, const double b, const double c) {
@@ -40,14 +69,15 @@ int main() {
     const double a = 3, b = 4, c = 5;
     std::cout << "Triangle sides: a = " << a << ", b = " << b << ", c = " << c << "\n";
 
-    const double circumradius = calculate_circumradius(a, b, c);
+    const auto curried_circumradius = curry(calculate_circumradius);
+
+    double circumradius = curried_circumradius(a)(b)(c);
 
     std::cout << "Circumradius: " << circumradius << "\n";
 
+    circumradius = curried_circumradius(a)(b)(c);
 
-    const double circumradius2 = calculate_circumradius(a, b, c);
-
-    std::cout << "Circumradius: " << circumradius2 << "\n";
+    std::cout << "Circumradius: " << circumradius << "\n";
 
     return 0;
 }

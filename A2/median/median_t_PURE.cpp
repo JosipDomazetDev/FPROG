@@ -1,7 +1,6 @@
 #include <iostream>
 #include <functional>
 
-// Silly square function that is immutable and pure
 const auto silly_square = [](const double x) {
     double result = 0;
     for (int i = 0; i < x; ++i) {
@@ -10,7 +9,6 @@ const auto silly_square = [](const double x) {
     return result;
 };
 
-// Helper function to calculate square root without using std::sqrt()
 const auto square_root = [](const double x, const double epsilon = 1e-10, const int max_iterations = 1000) -> double {
     if (x < 0) {
         return -1; // Invalid input

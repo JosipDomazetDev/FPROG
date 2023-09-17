@@ -1,16 +1,6 @@
 #include <iostream>
 #include <functional>
 
-// Silly square function that is immutable and pure
-const auto silly_square = [](const double x) {
-    double result = 0;
-    for (int i = 0; i < x; ++i) {
-        result += x;
-    }
-    return result;
-};
-
-// Helper function to calculate square root without using std::sqrt()
 const auto square_root = [](const double x, const double epsilon = 1e-10, const int max_iterations = 1000) -> double {
     if (x < 0) {
         return -1; // Invalid input
@@ -19,11 +9,12 @@ const auto square_root = [](const double x, const double epsilon = 1e-10, const 
         return 0;
     }
 
+    const double initial_x = x;
     double low = 0, high = x;
     double mid;
     for (int i = 0; i < max_iterations; ++i) {
         mid = (low + high) / 2.0;
-        double mid_square = mid * mid;
+        const double mid_square = mid * mid;
 
         if (mid_square > x) {
             high = mid;
@@ -38,12 +29,6 @@ const auto square_root = [](const double x, const double epsilon = 1e-10, const 
 
     return mid;
 };
-
-const auto calculate_median = [](const double a, const double b, const double c) {
-    const double result = 0.5 * square_root(2 * silly_square(b) + 2 * silly_square(c) - silly_square(a));
-    return result;
-};
-
 
 template<class, class = std::void_t<> >
 struct
@@ -74,35 +59,25 @@ curry(F &&f) {
     }
 }
 
+const double calculate_circumradius(const double a, const double b, const double c) {
+    const double s = (a + b + c) / 2;
+    const double area = square_root(s * (s - a) * (s - b) * (s - c));
+    return (a * b * c) / (4 * area);
+}
+
 int main() {
-    const double a_initial = 3;
-    const double b_initial = 4;
-    const double c_initial = 5;
-    std::cout << "Triangle sides: a = " << a_initial << ", b = " << b_initial << ", c = " << c_initial << "\n";
+    const double a = 3, b = 4, c = 5;
+    std::cout << "Triangle sides: a = " << a << ", b = " << b << ", c = " << c << "\n";
 
-    const auto curried_calculate_median = curry(calculate_median);
+    const auto curried_circumradius = curry(calculate_circumradius);
 
-    const auto median_a = curried_calculate_median(a_initial)(b_initial)(c_initial);
-    const auto median_b = curried_calculate_median(b_initial)(c_initial)(a_initial);
-    const auto median_c = curried_calculate_median(c_initial)(a_initial)(b_initial);
+    double circumradius = curried_circumradius(a)(b)(c);
 
-    std::cout << "Medians:\n";
-    std::cout << "Median from vertex A: " << median_a << "\n";
-    std::cout << "Median from vertex B: " << median_b << "\n";
-    std::cout << "Median from vertex C: " << median_c << "\n";
+    std::cout << "Circumradius: " << circumradius << "\n";
 
+    circumradius = curried_circumradius(a)(b)(c);
 
-    std::cout << "Triangle sides: a = " << a_initial << ", b = " << b_initial << ", c = " << c_initial << "\n";
-
-    const auto median_a2 = curried_calculate_median(a_initial)(b_initial)(c_initial);
-    const auto median_b2 = curried_calculate_median(b_initial)(c_initial)(a_initial);
-    const auto median_c2 = curried_calculate_median(c_initial)(a_initial)(b_initial);
-
-    std::cout << "Medians:\n";
-    std::cout << "Median from vertex A: " << median_a2 << "\n";
-    std::cout << "Median from vertex B: " << median_b2 << "\n";
-    std::cout << "Median from vertex C: " << median_c2 << "\n";
-
+    std::cout << "Circumradius: " << circumradius << "\n";
 
     return 0;
 }
