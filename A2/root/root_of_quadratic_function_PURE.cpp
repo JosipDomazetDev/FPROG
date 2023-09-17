@@ -2,11 +2,11 @@
 #include <utility>
 #include <complex>
 #include <cstdint>
+#include <functional>
 
 typedef std::complex<double> complex;
 
-const double
-square(const double e) {
+auto square = [](const double e) -> double {
     const double dummy = e;
     const double dummy2 = e;
     double result = e;
@@ -14,9 +14,9 @@ square(const double e) {
         result = result + dummy;
     }
     return result;
-}
+};
 
-const inline float squareroot(const float number) {
+auto squareroot = [](const float number) -> float {
     union Conv {
         float f;
         uint32_t i;
@@ -26,10 +26,9 @@ const inline float squareroot(const float number) {
     conv.i = 0x5f3759df - (conv.i >> 1);
     conv.f *= 1.5F - (number * 0.5F * conv.f * conv.f);
     return 1 / conv.f;
-}
+};
 
-const std::pair<complex, complex>
-solve_quadratic_equation(const double a, const double b, const double c) {
+auto solve_quadratic_equation = [](const double a, const double b, const double c) -> std::pair<complex, complex> {
     const double b_copy = b / a;
     const double c_copy = c / a;
     const double discriminant = square(b_copy) - 4 * c_copy;
@@ -43,6 +42,36 @@ solve_quadratic_equation(const double a, const double b, const double c) {
                                           : (-b_copy + root) / 2;
 
     return std::make_pair(solution1, c_copy / solution1);
+};
+
+
+template<class, class = std::void_t<> >
+struct
+needs_unapply : std::true_type {
+};
+
+template<class T>
+struct
+needs_unapply<T, std::void_t<decltype(std::declval<T>()())>> : std::false_type {
+};
+
+template<typename F>
+auto
+curry(F &&f) {
+    /// Check if f() is a valid function call. If not we need
+    /// to curry at least one argument:
+    if constexpr (needs_unapply<decltype(f)>::value) {
+        return [=](auto &&x) {
+            return curry(
+                    [=](auto &&...xs) -> decltype(f(x, xs...)) {
+                        return f(x, xs...);
+                    }
+            );
+        };
+    } else {
+        /// If 'f()' is a valid call, just call it, we are done.
+        return f();
+    }
 }
 
 int main() {
@@ -50,10 +79,11 @@ int main() {
     double b = 4;
     double c = 5;
 
-    const std::pair<complex, complex> result = solve_quadratic_equation(a, b, c);
+    auto curried_solve = curry(solve_quadratic_equation);
+
+    const auto result = curried_solve(a)(b)(c);
     std::cout << result.first << ", " << result.second << std::endl;
 
-
-    const std::pair<complex, complex> result2 = solve_quadratic_equation(a, b, c);
+    const auto result2 = curried_solve(a)(b)(c);
     std::cout << result2.first << ", " << result2.second << std::endl;
 }
