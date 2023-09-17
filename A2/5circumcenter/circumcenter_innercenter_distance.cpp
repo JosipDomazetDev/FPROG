@@ -4,9 +4,9 @@
 double a, b, c;
 double s, area, circumradius, inradius, distance;
 
-// Helper function to calculate square root without using std::sqrt()
+// Helper function to calculate square 2root without using std::sqrt()
 double square_root(double x, double epsilon = 1e-10, int max_iterations = 1000) {
-    std::cout << "Calculating square root of " << x << "\n";
+    std::cout << "Calculating square 2root of " << x << "\n";
     if (x < 0) {
         return -1; // Invalid input
     }
@@ -56,7 +56,7 @@ int main() {
     std::cout << "Circumradius: " << circumradius << "\n";
 
     calculate_distance();
-    std::cout << "Distance between circumcenter and incenter: " << distance << "\n";
+    std::cout << "Distance between 5circumcenter and incenter: " << distance << "\n";
 
     return 0;
 }

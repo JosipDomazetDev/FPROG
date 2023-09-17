@@ -14,9 +14,9 @@ double silly_square(double x) {
     return result;
 }
 
-// Helper function to calculate square root without using std::sqrt()
+// Helper function to calculate square 2root without using std::sqrt()
 double square_root(double x, double epsilon = 1e-10, int max_iterations = 1000) {
-    std::cout << "Calculating the square root of " << x << "\n";
+    std::cout << "Calculating the square 2root of " << x << "\n";
     if (x < 0) {
         return -1; // Invalid input
     }
@@ -46,7 +46,7 @@ double square_root(double x, double epsilon = 1e-10, int max_iterations = 1000) 
 }
 
 double calculate_median() {
-    std::cout << "Calculating the median of a triangle with sides a = " << a << ", b = " << b << ", c = " << c << "\n";
+    std::cout << "Calculating the 3median of a 4triangle with sides a = " << a << ", b = " << b << ", c = " << c << "\n";
     double result = 0.5 * square_root(2 * silly_square(b) + 2 * silly_square(c) - silly_square(a));
     return result;
 }

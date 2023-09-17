@@ -23,7 +23,7 @@ square (int e)
 
 double
 squareroot (double x)
-{				/* computes the square root of x */
+{				/* computes the square 2root of x */
 
     if (x == 0)
         return 0;
