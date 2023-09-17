@@ -1,47 +1,47 @@
 #include <iostream>
-#include <utility>
-#include <complex>
-#include <cstdint>
 #include <functional>
 
-typedef std::complex<double> complex;
-
-auto square = [](const double e) -> double {
-    const double dummy = e;
-    const double dummy2 = e;
-    double result = e;
-    for (int i = 1; i < dummy2; i++) {
-        result = result + dummy;
+// Silly square function that is immutable and pure
+const auto silly_square = [](const double x) {
+    double result = 0;
+    for (int i = 0; i < x; ++i) {
+        result += x;
     }
     return result;
 };
 
-auto squareroot = [](const float number) -> float {
-    union Conv {
-        float f;
-        uint32_t i;
-    };
-    Conv conv;
-    conv.f = number;
-    conv.i = 0x5f3759df - (conv.i >> 1);
-    conv.f *= 1.5F - (number * 0.5F * conv.f * conv.f);
-    return 1 / conv.f;
-};
-
-auto solve_quadratic_equation = [](const double a, const double b, const double c) -> std::pair<complex, complex> {
-    const double b_copy = b / a;
-    const double c_copy = c / a;
-    const double discriminant = square(b_copy) - 4 * c_copy;
-    if (discriminant < 0) {
-        return std::make_pair(complex(-b_copy / 2, squareroot(-discriminant) / 2),
-                              complex(-b_copy / 2, -squareroot(-discriminant) / 2));
+// Helper function to calculate square root without using std::sqrt()
+const auto square_root = [](const double x, const double epsilon = 1e-10, const int max_iterations = 1000) -> double {
+    if (x < 0) {
+        return -1; // Invalid input
+    }
+    if (x == 0) {
+        return 0;
     }
 
-    const double root = std::sqrt(discriminant);
-    const double solution1 = (b_copy > 0) ? (-b_copy - root) / 2
-                                          : (-b_copy + root) / 2;
+    double low = 0, high = x;
+    double mid;
+    for (int i = 0; i < max_iterations; ++i) {
+        mid = (low + high) / 2.0;
+        double mid_square = mid * mid;
 
-    return std::make_pair(solution1, c_copy / solution1);
+        if (mid_square > x) {
+            high = mid;
+        } else if (mid_square < x) {
+            low = mid;
+        }
+
+        if (high - low < epsilon) {
+            break;
+        }
+    }
+
+    return mid;
+};
+
+const auto calculate_median = [](const double a, const double b, const double c) {
+    const double result = 0.5 * square_root(2 * silly_square(b) + 2 * silly_square(c) - silly_square(a));
+    return result;
 };
 
 
@@ -75,15 +75,34 @@ curry(F &&f) {
 }
 
 int main() {
-    double a = 3;
-    double b = 4;
-    double c = 5;
+    const double a_initial = 3;
+    const double b_initial = 4;
+    const double c_initial = 5;
+    std::cout << "Triangle sides: a = " << a_initial << ", b = " << b_initial << ", c = " << c_initial << "\n";
 
-    auto curried_solve = curry(solve_quadratic_equation);
+    const auto curried_calculate_median = curry(calculate_median);
 
-    const auto result = curried_solve(a)(b)(c);
-    std::cout << result.first << ", " << result.second << std::endl;
+    const auto median_a = curried_calculate_median(a_initial)(b_initial)(c_initial);
+    const auto median_b = curried_calculate_median(b_initial)(c_initial)(a_initial);
+    const auto median_c = curried_calculate_median(c_initial)(a_initial)(b_initial);
 
-    const auto result2 = curried_solve(a)(b)(c);
-    std::cout << result2.first << ", " << result2.second << std::endl;
+    std::cout << "Medians:\n";
+    std::cout << "Median from vertex A: " << median_a << "\n";
+    std::cout << "Median from vertex B: " << median_b << "\n";
+    std::cout << "Median from vertex C: " << median_c << "\n";
+
+
+    std::cout << "Triangle sides: a = " << a_initial << ", b = " << b_initial << ", c = " << c_initial << "\n";
+
+    const auto median_a2 = curried_calculate_median(a_initial)(b_initial)(c_initial);
+    const auto median_b2 = curried_calculate_median(b_initial)(c_initial)(a_initial);
+    const auto median_c2 = curried_calculate_median(c_initial)(a_initial)(b_initial);
+
+    std::cout << "Medians:\n";
+    std::cout << "Median from vertex A: " << median_a2 << "\n";
+    std::cout << "Median from vertex B: " << median_b2 << "\n";
+    std::cout << "Median from vertex C: " << median_c2 << "\n";
+
+
+    return 0;
 }
