@@ -1,59 +1,60 @@
 #include <iostream>
-#include <utility>
-#include <complex>
-#include <cstdint>
+#include <functional>
 
-typedef std::complex<double> complex;
+using namespace std;
 
-const double
-square(const double e) {
-    const double dummy = e;
-    const double dummy2 = e;
-    double result = e;
+const auto square = [](const int e) {
+    int result = e;
+    int dummy2 = e;
     for (int i = 1; i < dummy2; i++) {
-        result = result + dummy;
+        result += e;
     }
     return result;
-}
+};
 
-const inline float squareroot(const float number) {
-    union Conv {
-        float f;
-        uint32_t i;
-    };
-    Conv conv;
-    conv.f = number;
-    conv.i = 0x5f3759df - (conv.i >> 1);
-    conv.f *= 1.5F - (number * 0.5F * conv.f * conv.f);
-    return 1 / conv.f;
-}
+const auto squareroot = [](const double x) {
+    if (x == 0)
+        return 0.0;
 
-const std::pair<complex, complex>
-solve_quadratic_equation(const double a, const double b, const double c) {
-    const double b_copy = b / a;
-    const double c_copy = c / a;
-    const double discriminant = square(b_copy) - 4 * c_copy;
-    if (discriminant < 0) {
-        return std::make_pair(complex(-b_copy / 2, squareroot(-discriminant) / 2),
-                              complex(-b_copy / 2, -squareroot(-discriminant) / 2));
+    double xhi = x;
+    double xlo = 0.0;
+    double guess = x / 2;
+
+    while (abs(guess * guess - x) > 0.00001) {
+        if (guess * guess > x)
+            xhi = guess;
+        else
+            xlo = guess;
+
+        guess = (xhi + xlo) / 2;
     }
 
-    const double root = std::sqrt(discriminant);
-    const double solution1 = (b_copy > 0) ? (-b_copy - root) / 2
-                                          : (-b_copy + root) / 2;
+    return guess;
+};
 
-    return std::make_pair(solution1, c_copy / solution1);
+const auto pythagoras = [](const int x, const int y) {
+    return squareroot(square(x) + square(y));
+};
+
+template<typename Func>
+auto curry(Func func) {
+    return [func](auto x) {
+        return [func, x](auto y) {
+            return func(x, y);
+        };
+    };
 }
 
-int main() {
-    double a = 3;
-    double b = 4;
-    double c = 5;
+int main(int argc, char *argv[]) {
+    const int x = 3;
+    const int y = 4;
 
-    const std::pair<complex, complex> result = solve_quadratic_equation(a, b, c);
-    std::cout << result.first << ", " << result.second << std::endl;
+    const auto curried_pythagoras = curry(pythagoras);
+    double z = curried_pythagoras(x)(y);
+    cout << "euklid:" << z << endl;
 
+    z = curried_pythagoras(x)(y);
+    cout << "euklid:" << z << endl;
 
-    const std::pair<complex, complex> result2 = solve_quadratic_equation(a, b, c);
-    std::cout << result2.first << ", " << result2.second << std::endl;
+    return 0;
 }
