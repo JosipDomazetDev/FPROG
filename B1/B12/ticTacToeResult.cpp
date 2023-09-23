@@ -2,7 +2,7 @@
 #include <functional>
 #include <numeric>
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <optional>
+#include "doctest.h"
 
 using namespace std;
 using namespace std::placeholders;
@@ -47,9 +47,9 @@ auto boardToLinesString = [](const auto& board){
 
 auto boardToString = [](const auto& board){
     const auto linesAsString = boardToLinesString(board);
-    return accumulateAll(linesAsString,
-                         [](string current, string lineAsString) { return current + lineAsString + "\n"; }
-    );
+    return accumulateAll(linesAsString, 
+            [](string current, string lineAsString) { return current + lineAsString + "\n"; }
+            );
 };
 
 auto concatenate = [](const auto& first, const auto& second){
@@ -136,15 +136,15 @@ auto lineFilledWith = [](const auto& line, const auto& tokenToCheck){
     return all_of_collection(line, [&tokenToCheck](const auto& token){ return token == tokenToCheck;});
 };
 
-auto lineFilledWithX = bind(lineFilledWith, _1, 'X');
+auto lineFilledWithX = bind(lineFilledWith, _1, 'X'); 
 auto lineFilledWithO = bind(lineFilledWith, _1, 'O');
 
 template <typename CollectionBooleanOperation, typename CollectionProvider, typename Predicate>
 auto booleanOperationOnProvidedCollection(CollectionBooleanOperation collectionBooleanOperation, CollectionProvider collectionProvider, Predicate predicate){
-    return [=](auto collectionProviderSeed, auto predicateFirstParameter){
-        return collectionBooleanOperation(collectionProvider(collectionProviderSeed),
-                                          bind(predicate, _1, predicateFirstParameter));
-    };
+  return [=](auto collectionProviderSeed, auto predicateFirstParameter){
+      return collectionBooleanOperation(collectionProvider(collectionProviderSeed), 
+              bind(predicate, _1, predicateFirstParameter));
+  };
 }
 
 auto tokenWins = booleanOperationOnProvidedCollection(any_of_collection, allLinesColumnsAndDiagonals, lineFilledWith);
@@ -175,11 +175,11 @@ auto full = [](const auto& board){
 };
 
 auto draw = [](const auto& board){
-    return full(board) && !xWins(board) && !oWins(board);
+    return full(board) && !xWins(board) && !oWins(board); 
 };
 
 auto inProgress = [](const auto& board){
-    return !full(board) && !xWins(board) && !oWins(board);
+    return !full(board) && !xWins(board) && !oWins(board); 
 };
 
 auto findInCollection = [](const auto& collection, const auto& fn){
@@ -190,91 +190,91 @@ auto findInCollection = [](const auto& collection, const auto& fn){
 auto findInCollectionWithDefault = [](const auto& collection, const auto& defaultResult, const auto& fn){
     const auto result = findInCollection(collection, fn);
     return result.has_value() ? (*result) : defaultResult;
-};
+}; 
 
 auto howDidXWin = [](auto const board){
     map<string, Line> linesWithDescription{
-            {"first line", line(board, 0)},
-            {"second line", line(board, 1)},
-            {"last line", line(board, 2)},
-            {"first column", column(board, 0)},
-            {"second column", column(board, 1)},
-            {"last column", column(board, 2)},
-            {"main diagonal", mainDiagonal(board)},
-            {"secondary diagonal", secondaryDiagonal(board)},
-            {"diagonal", secondaryDiagonal(board)},
+        {"first line", line(board, 0)},
+        {"second line", line(board, 1)},
+        {"last line", line(board, 2)},
+        {"first column", column(board, 0)},
+        {"second column", column(board, 1)},
+        {"last column", column(board, 2)},
+        {"main diagonal", mainDiagonal(board)},
+        {"secondary diagonal", secondaryDiagonal(board)},
+        {"diagonal", secondaryDiagonal(board)},
     };
     auto xDidNotWin = make_pair("X did not win", Line{});
     auto xWon = [](auto value){
         return lineFilledWithX(value.second);
     };
 
-    return findInCollectionWithDefault(linesWithDescription, xDidNotWin, xWon).first;
+    return findInCollectionWithDefault(linesWithDescription, xDidNotWin, xWon).first; 
 };
 
 TEST_CASE("lines"){
-Board board{
+    Board board{
         {'X', 'X', 'X'},
         {' ', 'O', ' '},
         {' ', ' ', 'O'}
-};
+    };
 
-Line expectedLine0{'X', 'X', 'X'};
-CHECK_EQ(expectedLine0, line(board, 0));
-Line expectedLine1{' ', 'O', ' '};
-CHECK_EQ(expectedLine1, line(board, 1));
-Line expectedLine2{' ', ' ', 'O'};
-CHECK_EQ(expectedLine2, line(board, 2));
+    Line expectedLine0{'X', 'X', 'X'};
+    CHECK_EQ(expectedLine0, line(board, 0));
+    Line expectedLine1{' ', 'O', ' '};
+    CHECK_EQ(expectedLine1, line(board, 1));
+    Line expectedLine2{' ', ' ', 'O'};
+    CHECK_EQ(expectedLine2, line(board, 2));
 }
 
 TEST_CASE("all columns"){
-Board board{
+    Board board{
         {'X', 'X', 'X'},
         {' ', 'O', ' '},
         {' ', ' ', 'O'}
-};
+    };
 
-Line expectedColumn0{'X', ' ', ' '};
-CHECK_EQ(expectedColumn0, column(board, 0));
-Line expectedColumn1{'X', 'O', ' '};
-CHECK_EQ(expectedColumn1, column(board, 1));
-Line expectedColumn2{'X', ' ', 'O'};
-CHECK_EQ(expectedColumn2, column(board, 2));
+    Line expectedColumn0{'X', ' ', ' '};
+    CHECK_EQ(expectedColumn0, column(board, 0));
+    Line expectedColumn1{'X', 'O', ' '};
+    CHECK_EQ(expectedColumn1, column(board, 1));
+    Line expectedColumn2{'X', ' ', 'O'};
+    CHECK_EQ(expectedColumn2, column(board, 2));
 }
 
 TEST_CASE("main diagonal"){
-Board board {
+    Board board {
         {'X', 'X', 'X'},
         {' ', 'O', ' '},
         {' ', ' ', 'O'}
-};
+    };
 
-Line expectedDiagonal{'X', 'O', 'O'};
+    Line expectedDiagonal{'X', 'O', 'O'};
 
-CHECK_EQ(expectedDiagonal, mainDiagonal(board));
+    CHECK_EQ(expectedDiagonal, mainDiagonal(board));
 }
 
 TEST_CASE("secondary diagonal"){
-Board board {
+    Board board {
         {'X', 'X', 'X'},
         {' ', 'O', ' '},
         {' ', ' ', 'O'}
-};
+    };
 
-Line expectedDiagonal{'X', 'O', ' '};
+    Line expectedDiagonal{'X', 'O', ' '};
 
-CHECK_EQ(expectedDiagonal, secondaryDiagonal(board));
+    CHECK_EQ(expectedDiagonal, secondaryDiagonal(board));
 }
 
 
 TEST_CASE("all lines, columns and diagonals"){
-Board board {
+    Board board {
         {'X', 'X', 'X'},
         {' ', 'O', ' '},
         {' ', ' ', 'O'}
-};
+    };
 
-Lines expected{
+    Lines expected{
         {'X', 'X', 'X'},
         {' ', 'O', ' '},
         {' ', ' ', 'O'},
@@ -283,141 +283,141 @@ Lines expected{
         {'X', ' ', 'O'},
         {'X', 'O', 'O'},
         {'X', 'O', ' '}
-};
+    };
 
-auto all = allLinesColumnsAndDiagonals(board);
-CHECK_EQ(expected, all);
+    auto all = allLinesColumnsAndDiagonals(board);
+    CHECK_EQ(expected, all);
 }
 
 TEST_CASE("line to string"){
-Line line{
+    Line line{
         ' ', 'X', 'O'
-};
+    };
 
-CHECK_EQ(" XO", lineToString(line));
+    CHECK_EQ(" XO", lineToString(line));
 }
 
 TEST_CASE("board to lines string"){
-Board board{
+    Board board{
         {'X', 'X', 'X'},
         {' ', 'O', ' '},
         {' ', ' ', 'O'}
-};
-vector<string> expected{
+    };
+    vector<string> expected{
         "XXX",
         " O ",
         "  O"
-};
+    };
 
-CHECK_EQ(expected, boardToLinesString(board));
+    CHECK_EQ(expected, boardToLinesString(board));
 }
 
 TEST_CASE("board to string"){
-Board board{
+    Board board{
         {'X', 'X', 'X'},
         {' ', 'O', ' '},
         {' ', ' ', 'O'}
-};
-string expected{"XXX\n O \n  O\n"};
+    };
+    string expected{"XXX\n O \n  O\n"};
 
-CHECK_EQ(expected, boardToString(board));
+    CHECK_EQ(expected, boardToString(board));
 }
 
 TEST_CASE("Line filled with X"){
-Line line{'X', 'X', 'X'};
+    Line line{'X', 'X', 'X'};
 
-CHECK(lineFilledWithX(line));
+    CHECK(lineFilledWithX(line));
 }
 
 TEST_CASE("Line not filled with X"){
-CHECK(!lineFilledWithX(Line({'X', 'O', 'X'})));
-CHECK(!lineFilledWithX(Line({'X', ' ', 'X'})));
+    CHECK(!lineFilledWithX(Line({'X', 'O', 'X'})));
+    CHECK(!lineFilledWithX(Line({'X', ' ', 'X'})));
 }
 
 TEST_CASE("X wins"){
-Board board{
+    Board board{
         {'X', 'X', 'X'},
         {' ', 'O', ' '},
         {' ', ' ', 'O'}
-};
+    };
 
-CHECK(xWins(board));
+    CHECK(xWins(board));
 }
 
 TEST_CASE("O wins"){
-Board board{
+    Board board{
         {'X', 'O', 'X'},
         {' ', 'O', ' '},
         {' ', 'O', 'X'}
-};
+    };
 
-CHECK(oWins(board));
+    CHECK(oWins(board));
 }
 
 TEST_CASE("draw"){
-Board board{
+    Board board{
         {'X', 'O', 'X'},
         {'O', 'O', 'X'},
         {'X', 'X', 'O'}
-};
+    };
 
-CHECK(draw(board));
+    CHECK(draw(board));
 }
 
 TEST_CASE("in progress"){
-Board board{
+    Board board{
         {'X', 'O', 'X'},
         {'O', ' ', 'X'},
         {'X', 'X', 'O'}
-};
+    };
 
-CHECK(inProgress(board));
+    CHECK(inProgress(board));
 }
 
 
 TEST_CASE("how did X win"){
-Board board{
+    Board board{
         {'X', 'X', 'X'},
         {' ', 'O', ' '},
         {' ', ' ', 'O'}
-};
+    };
 
-CHECK_EQ("first line", howDidXWin(board));
+    CHECK_EQ("first line", howDidXWin(board));
 }
 
 TEST_CASE("X did not win"){
-Board board{
+    Board board{
         {'X', 'X', ' '},
         {' ', 'O', ' '},
         {' ', ' ', 'O'}
-};
+    };
 
-CHECK_EQ("X did not win", howDidXWin(board));
+    CHECK_EQ("X did not win", howDidXWin(board));
 }
 
 TEST_CASE("Project column"){
-Board board{
+    Board board{
         {'X', 'X', 'X'},
         {' ', 'O', ' '},
         {' ', ' ', 'O'}
-};
+    };
 
-Line expected0{'X', ' ', ' '};
-CHECK_EQ(expected0, column(board, 0));
-Line expected1{'X', 'O', ' '};
-CHECK_EQ(expected1, column(board, 1));
-Line expected2{'X', ' ', 'O'};
-CHECK_EQ(expected2, column(board, 2));
+    Line expected0{'X', ' ', ' '};
+    CHECK_EQ(expected0, column(board, 0));
+    Line expected1{'X', 'O', ' '};
+    CHECK_EQ(expected1, column(board, 1));
+    Line expected2{'X', ' ', 'O'};
+    CHECK_EQ(expected2, column(board, 2));
 }
 
 TEST_CASE("Range"){
-Board board{
+    Board board{
         {'X', 'X', 'X'},
         {' ', 'O', ' '},
         {' ', ' ', 'O'}
-};
+    };
 
-vector<int> expected = {0, 1, 2};
-CHECK_EQ(expected, toRange(board));
-CHECK_EQ(expected, toRange(board[0]));
+    vector<int> expected = {0, 1, 2};
+    CHECK_EQ(expected, toRange(board));
+    CHECK_EQ(expected, toRange(board[0]));
 }
