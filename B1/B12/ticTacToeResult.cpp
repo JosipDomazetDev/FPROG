@@ -3,6 +3,7 @@
 #include <numeric>
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
+#include <optional>
 
 using namespace std;
 using namespace std::placeholders;
@@ -421,3 +422,106 @@ TEST_CASE("Range"){
     CHECK_EQ(expected, toRange(board));
     CHECK_EQ(expected, toRange(board[0]));
 }
+
+
+
+// ================================= CUSTOM ===============================
+
+auto differenceInTokensGreaterThanOne = [](const Board& board) {
+    int xCount = 0;
+    int oCount = 0;
+    for (const auto& row : board) {
+        for (char token : row) {
+            if (token == 'X') {
+                xCount++;
+            } else if (token == 'O') {
+                oCount++;
+            }
+        }
+    }
+    return abs(xCount - oCount) > 1;
+};
+
+auto allTokensAreValid = [](const Board& board) {
+    return all_of(board.begin(), board.end(), [](const Line& line) {
+        return all_of(line.begin(), line.end(), [](char token) {
+            return token == 'X' || token == 'O';
+        });
+    });
+};
+
+auto noInvalidTokens = [](const Board& board) {
+    return all_of(board.begin(), board.end(), [](const Line& line) {
+        return all_of(line.begin(), line.end(), [](char token) {
+            return token == 'X' || token == 'O' || token == ' ';
+        });
+    });
+};
+
+auto isInvalidBoardDimensions = [](const Board& board) {
+    return board.size() != 3 || board[0].size() != 3;
+};
+
+auto isValidBoardDimensions = [](const Board& board) {
+    return board.size() == 3 && board[0].size() == 3;
+};
+
+
+
+TEST_CASE("Difference in the number of tokens for the two players > 1") {
+    Board board{
+            {'X', 'X', 'O'},
+            {'O', 'O', 'O'},
+            {'X', 'X', 'X'}
+    };
+
+    CHECK(!differenceInTokensGreaterThanOne(board));
+
+    Board board2{
+            {'X', 'X', 'O'},
+            {'O', 'X', 'O'},
+            {'X', 'X', 'X'}
+    };
+
+    CHECK(differenceInTokensGreaterThanOne(board2));
+}
+
+TEST_CASE("Check for correct tokens") {
+    Board board{
+            {'X', 'X', 'O'},
+            {'O', 'O', 'X'},
+            {'X', 'X', 'O'}
+    };
+
+    CHECK(allTokensAreValid(board));
+}
+
+TEST_CASE("Check for wrong tokens") {
+    Board board{
+            {'X', 'X', 'O'},
+            {'O', 'Z', 'X'},
+            {'X', 'X', 'O'}
+    };
+
+    CHECK(!noInvalidTokens(board));
+}
+
+TEST_CASE("Board-dimension is wrong") {
+    Board board{
+            {'X', 'X', 'O'},
+            {'O', 'O', 'X'},
+    };
+
+    CHECK(isInvalidBoardDimensions(board));
+}
+
+TEST_CASE("Board-dimension is correct") {
+    Board board{
+            {'X', 'X', 'O'},
+            {'O', 'O', 'X'},
+            {'X', 'X', 'O'}
+    };
+
+    CHECK(isValidBoardDimensions(board));
+}
+
