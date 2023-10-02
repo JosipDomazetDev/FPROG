@@ -12,10 +12,14 @@
 #include <optional>
 
 
-using SortingFunction = std::function<void(std::vector<int> &)>;
+using SortingFunction2 = std::function<std::vector<int>(std::vector<int> &)>;
 
-SortingFunction BucketSort = [](std::vector<int> &arr) {
-    if (arr.empty()) return;
+
+// https://www.youtube.com/watch?v=GAU102t5n4U
+SortingFunction2 BucketSort = [](std::vector<int> originalArray) -> std::vector<int> {
+    std::vector<int> arr = originalArray;
+
+    if (arr.empty()) return arr;
 
     int minVal = *min_element(arr.begin(), arr.end());
     int maxVal = *max_element(arr.begin(), arr.end());
@@ -32,9 +36,16 @@ SortingFunction BucketSort = [](std::vector<int> &arr) {
             arr[index++] = num;
         }
     }
+
+    return arr;
 };
 
-SortingFunction InsertionSort = [](std::vector<int> &arr) {
+// https://www.youtube.com/watch?v=OGzPmgsI-pQ
+SortingFunction2 InsertionSort = [](std::vector<int> originalArray) -> std::vector<int> {
+    std::vector<int> arr = originalArray;
+
+    if (arr.empty()) return arr;
+
     for (size_t i = 1; i < arr.size(); ++i) {
         int key = arr[i];
         int j = i - 1;
@@ -46,10 +57,15 @@ SortingFunction InsertionSort = [](std::vector<int> &arr) {
 
         arr[j + 1] = key;
     }
+
+    return arr;
 };
 
-SortingFunction BubbleSort = [](std::vector<int> &arr) {
-    if (arr.empty()) return;
+// https://www.youtube.com/watch?v=nmhjrI-aW5o
+SortingFunction2 BubbleSort = [](std::vector<int> originalArray) -> std::vector<int> {
+    std::vector<int> arr = originalArray;
+
+    if (arr.empty()) return arr;
 
     for (size_t i = 0; i < arr.size() - 1; ++i) {
         for (size_t j = 0; j < arr.size() - i - 1; ++j) {
@@ -58,10 +74,16 @@ SortingFunction BubbleSort = [](std::vector<int> &arr) {
             }
         }
     }
+
+    return arr;
 };
 
-SortingFunction SelectionSort = [](std::vector<int> &arr) {
-    if (arr.empty()) return;
+
+// https://www.youtube.com/watch?v=xWBP4lzkoyM
+SortingFunction2 SelectionSort = [](std::vector<int> originalArray) -> std::vector<int> {
+    std::vector<int> arr = originalArray;
+
+    if (arr.empty()) return arr;
 
     for (size_t i = 0; i < arr.size() - 1; ++i) {
         size_t minIndex = i;
@@ -74,10 +96,15 @@ SortingFunction SelectionSort = [](std::vector<int> &arr) {
 
         std::swap(arr[i], arr[minIndex]);
     }
+
+    return arr;
 };
 
-SortingFunction QuickSort = [](std::vector<int> &arr) {
-    if (arr.size() <= 1) return;
+// https://www.youtube.com/watch?v=PgBzjlCcFvc
+SortingFunction2 QuickSort = [](std::vector<int> originalArray) -> std::vector<int> {
+    std::vector<int> arr = originalArray;
+
+    if (arr.size() <= 1) return arr;
 
     int pivot = arr[0];
     std::vector<int> left, right;
@@ -90,12 +117,16 @@ SortingFunction QuickSort = [](std::vector<int> &arr) {
         }
     }
 
-    QuickSort(left);
-    QuickSort(right);
+    left = QuickSort(left);
+    right = QuickSort(right);
 
-    std::copy(left.begin(), left.end(), arr.begin());
-    arr[left.size()] = pivot;
-    std::copy(right.begin(), right.end(), arr.begin() + left.size() + 1);
+    std::vector<int> sortedArr;
+    sortedArr.reserve(left.size() + 1 + right.size());
+    sortedArr.insert(sortedArr.end(), left.begin(), left.end());
+    sortedArr.push_back(pivot);
+    sortedArr.insert(sortedArr.end(), right.begin(), right.end());
+
+    return sortedArr;
 };
 
 
@@ -103,45 +134,65 @@ TEST_CASE("Bucket Sort Test") {
     std::vector<int> arr = {4, 2, 7, 1, 9, 3, 8, 6, 5};
     std::vector<int> expected = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-    BucketSort(arr);
 
-    CHECK(arr == expected);
+    std::vector<int> sorted = BucketSort(arr);
+
+
+    CHECK(sorted == expected);
+
+    // Check arr was not mutated
+    CHECK(arr != expected);
 }
 
 TEST_CASE("Insertion Sort Test") {
     std::vector<int> arr = {4, 2, 7, 1, 9, 3, 8, 6, 5};
     std::vector<int> expected = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-    InsertionSort(arr);
+    std::vector<int> sorted = InsertionSort(arr);
 
-    CHECK(arr == expected);
+    CHECK(sorted == expected);
+
+    // Check arr was not mutated
+    CHECK(arr != expected);
+
 }
 
 TEST_CASE("Bubble Sort Test") {
     std::vector<int> arr = {4, 2, 7, 1, 9, 3, 8, 6, 5};
     std::vector<int> expected = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-    BubbleSort(arr);
+    std::vector<int> sorted = BubbleSort(arr);
 
-    CHECK(arr == expected);
+    CHECK(sorted == expected);
+
+    // Check arr was not mutated
+    CHECK(arr != expected);
+
 }
 
 TEST_CASE("Selection Sort Test") {
     std::vector<int> arr = {4, 2, 7, 1, 9, 3, 8, 6, 5};
     std::vector<int> expected = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-    SelectionSort(arr);
+    std::vector<int> sorted = SelectionSort(arr);
 
-    CHECK(arr == expected);
+    CHECK(sorted == expected);
+
+    // Check arr was not mutated
+    CHECK(arr != expected);
 }
 
 TEST_CASE("Quick Sort Test") {
     std::vector<int> arr = {4, 2, 7, 1, 9, 3, 8, 6, 5};
     std::vector<int> expected = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-    QuickSort(arr);
+    std::vector<int> sorted = QuickSort(arr);
 
-    CHECK(arr == expected);
+
+    CHECK(sorted == expected);
+
+    // Check arr was not mutated
+    CHECK(arr != expected);
 }
 
 

@@ -2,31 +2,48 @@
 #include <vector>
 #include <algorithm>
 #include <functional>
+#include <iostream>
+#include <functional>
+#include <numeric>
+
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+
 #include "doctest.h"
+#include <optional>
 
-using SortingFunction = std::function<void(std::vector<int>&)>;
 
-SortingFunction BucketSort = [](std::vector<int>& arr) {
-    if (arr.empty()) return;
+using SortingFunction2 = std::function<std::vector<int>(std::vector<int> &)>;
+
+
+SortingFunction2 BucketSort = [](std::vector<int> originalArray) -> std::vector<int> {
+    std::vector<int> arr = originalArray;
+
+    if (arr.empty()) return arr;
 
     int minVal = *min_element(arr.begin(), arr.end());
     int maxVal = *max_element(arr.begin(), arr.end());
 
     std::vector<std::vector<int>> buckets(maxVal - minVal + 1);
 
-    for (int num : arr) {
+    for (int num: arr) {
         buckets[num - minVal].push_back(num);
     }
 
     int index = 0;
-    for (const auto& bucket : buckets) {
-        for (int num : bucket) {
+    for (const auto &bucket: buckets) {
+        for (int num: bucket) {
             arr[index++] = num;
         }
     }
+
+    return arr;
 };
 
-SortingFunction InsertionSort = [](std::vector<int>& arr) {
+SortingFunction2 InsertionSort = [](std::vector<int> originalArray) -> std::vector<int> {
+    std::vector<int> arr = originalArray;
+
+    if (arr.empty()) return arr;
+
     for (size_t i = 1; i < arr.size(); ++i) {
         int key = arr[i];
         int j = i - 1;
@@ -38,9 +55,15 @@ SortingFunction InsertionSort = [](std::vector<int>& arr) {
 
         arr[j + 1] = key;
     }
+
+    return arr;
 };
 
-SortingFunction BubbleSort = [](std::vector<int>& arr) {
+SortingFunction2 BubbleSort = [](std::vector<int> originalArray) {
+    std::vector<int> arr = originalArray;
+
+    if (arr.empty()) return arr;
+
     for (size_t i = 0; i < arr.size() - 1; ++i) {
         for (size_t j = 0; j < arr.size() - i - 1; ++j) {
             if (arr[j] > arr[j + 1]) {
@@ -48,9 +71,15 @@ SortingFunction BubbleSort = [](std::vector<int>& arr) {
             }
         }
     }
+
+    return arr;
 };
 
-SortingFunction SelectionSort = [](std::vector<int>& arr) {
+SortingFunction2 SelectionSort = [](std::vector<int> originalArray) -> std::vector<int> {
+    std::vector<int> arr = originalArray;
+
+    if (arr.empty()) return arr;
+
     for (size_t i = 0; i < arr.size() - 1; ++i) {
         size_t minIndex = i;
 
@@ -62,10 +91,15 @@ SortingFunction SelectionSort = [](std::vector<int>& arr) {
 
         std::swap(arr[i], arr[minIndex]);
     }
+
+    return arr;
 };
 
-SortingFunction QuickSort = [](std::vector<int>& arr) {
-    if (arr.size() <= 1) return;
+SortingFunction2 QuickSort = [](std::vector<int> originalArray) -> std::vector<int> {
+    std::vector<int> arr = originalArray;
+
+    if (arr.empty()) return arr;
+
 
     int pivot = arr[0];
     std::vector<int> left, right;
@@ -86,24 +120,144 @@ SortingFunction QuickSort = [](std::vector<int>& arr) {
     std::copy(right.begin(), right.end(), arr.begin() + left.size() + 1);
 };
 
-int xerer(){
-    return 4;
+
+TEST_CASE("Bucket Sort Test") {
+    std::vector<int> arr = {4, 2, 7, 1, 9, 3, 8, 6, 5};
+    std::vector<int> expected = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+
+    std::vector<int> sorted = BucketSort(arr);
+
+
+    CHECK(sorted == expected);
+
+    // Check arr was not mutated
+    CHECK(arr == expected);
 }
 
-int main() {
-    std::vector<int> arr = {5, 2, 9, 1, 5, 6};
+TEST_CASE("Insertion Sort Test") {
+    std::vector<int> arr = {4, 2, 7, 1, 9, 3, 8, 6, 5};
+    std::vector<int> expected = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
+    std::vector<int> sorted = InsertionSort(arr);
 
-    for (int num : arr) {
-        std::cout << num << " ";
-    }
-    std::cout << std::endl;
+    CHECK(sorted == expected);
 
-    return 0;
+    // Check arr was not mutated
+    CHECK(arr == expected);
+
 }
 
-TEST_CASE("X wins on board"){
+TEST_CASE("Bubble Sort Test") {
+    std::vector<int> arr = {4, 2, 7, 1, 9, 3, 8, 6, 5};
+    std::vector<int> expected = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-    CHECK(true);
+    std::vector<int> sorted = BubbleSort(arr);
 
+    CHECK(sorted == expected);
+
+    // Check arr was not mutated
+    CHECK(arr == expected);
+
+}
+
+TEST_CASE("Selection Sort Test") {
+    std::vector<int> arr = {4, 2, 7, 1, 9, 3, 8, 6, 5};
+    std::vector<int> expected = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+    std::vector<int> sorted = SelectionSort(arr);
+
+    CHECK(sorted == expected);
+
+    // Check arr was not mutated
+    CHECK(arr == expected);
+}
+
+TEST_CASE("Quick Sort Test") {
+    std::vector<int> arr = {4, 2, 7, 1, 9, 3, 8, 6, 5};
+    std::vector<int> expected = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+    std::vector<int> sorted = QuickSort(arr);
+
+    CHECK(sorted == expected);
+
+    // Check arr was not mutated
+    CHECK(arr == expected);
+}
+
+
+TEST_CASE("Bucket Sort Edge Cases") {
+    // Edge case: Empty input
+    std::vector<int> arr1;
+    std::vector<int> expected1;
+    BucketSort(arr1);
+    CHECK(arr1 == expected1);
+
+    // Edge case: Input with a single element
+    std::vector<int> arr2 = {42};
+    std::vector<int> expected2 = {42};
+    BucketSort(arr2);
+    CHECK(arr2 == expected2);
+}
+
+TEST_CASE("Insertion Sort Edge Cases") {
+    // Edge case: Empty input
+    std::vector<int> arr1;
+    std::vector<int> expected1;
+    InsertionSort(arr1);
+    CHECK(arr1 == expected1);
+
+    // Edge case: Input with a single element
+    std::vector<int> arr2 = {42};
+    std::vector<int> expected2 = {42};
+    InsertionSort(arr2);
+    CHECK(arr2 == expected2);
+}
+
+TEST_CASE("Bubble Sort Edge Cases") {
+    // Edge case: Empty input
+    std::vector<int> arr1;
+    std::vector<int> expected1;
+    BubbleSort(arr1);
+    CHECK(arr1 == expected1);
+
+    // Edge case: Input with a single element
+    std::vector<int> arr2 = {42};
+    std::vector<int> expected2 = {42};
+    BubbleSort(arr2);
+    CHECK(arr2 == expected2);
+}
+
+TEST_CASE("Selection Sort Edge Cases") {
+    // Edge case: Empty input
+    std::vector<int> arr1;
+    std::vector<int> expected1;
+    SelectionSort(arr1);
+    CHECK(arr1 == expected1);
+
+    // Edge case: Input with a single element
+    std::vector<int> arr2 = {42};
+    std::vector<int> expected2 = {42};
+    SelectionSort(arr2);
+    CHECK(arr2 == expected2);
+}
+
+TEST_CASE("Quick Sort Edge Cases") {
+    // Edge case: Empty input
+    std::vector<int> arr1;
+    std::vector<int> expected1;
+    QuickSort(arr1);
+    CHECK(arr1 == expected1);
+
+    // Edge case: Input with a single element
+    std::vector<int> arr2 = {42};
+    std::vector<int> expected2 = {42};
+    QuickSort(arr2);
+    CHECK(arr2 == expected2);
+
+    // Edge case: Already sorted input
+    std::vector<int> arr3 = {1, 2, 3, 4, 5};
+    std::vector<int> expected3 = {1, 2, 3, 4, 5};
+    QuickSort(arr3);
+    CHECK(arr3 == expected3);
 }
