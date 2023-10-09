@@ -529,3 +529,180 @@ TEST_CASE("Board-dimension is correct") {
     CHECK(isValidBoardDimensions(board));
 }
 
+
+#include <random>
+
+auto randomInt = [](int min, int max) -> int {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distr(min, max);
+    return distr(gen);
+};
+
+auto generateFullyFilledCorrectBoard = []() -> Board {
+    Board board(3, Line(3));
+    for (auto &row: board) {
+        for (auto &cell: row) {
+            cell = randomInt(0, 1) ? 'X' : 'O';
+        }
+    }
+    return board;
+};
+
+auto generateFullyFilledErroneousBoard = []() -> Board {
+    Board board(3, Line(3));
+    for (auto &row: board) {
+        for (auto &cell: row) {
+            cell = 'X' + randomInt(0, 25);
+        }
+    }
+    return board;
+};
+
+auto generatePartiallyFilledCorrectBoard = []() -> Board {
+    Board board(3, Line(3, ' '));
+    for (auto &row: board) {
+        for (auto &cell: row) {
+            cell = randomInt(0, 2) == 0 ? ' ' : (randomInt(0, 1) ? 'X' : 'O');
+        }
+    }
+
+    // Ensure always unfilled
+    board[0][0] = ' ';
+
+    return board;
+};
+
+auto generatePartiallyFilledErroneousBoard = []() -> Board {
+    Board board(3, Line(3, ' '));
+    for (auto &row: board) {
+        for (auto &cell: row) {
+            cell = randomInt(0, 2) == 0 ? ' ' : ('A' + randomInt(0, 25));
+        }
+    }
+
+    // Ensure always unfilled
+    board[0][0] = ' ';
+
+    return board;
+};
+
+auto generateCorrectWinningBoard = []() -> Board {
+    Board board(3, Line(3, ' '));
+    char winner = randomInt(0, 1) ? 'X' : 'O';
+    int rowOrCol = randomInt(0, 2);
+    if (rowOrCol == 0) {
+        // Winning row
+        int row = randomInt(0, 2);
+        for (auto &cell: board[row]) {
+            cell = winner;
+        }
+    } else {
+        // Winning column
+        int col = randomInt(0, 2);
+        for (auto &row: board) {
+            row[col] = winner;
+        }
+    }
+    return board;
+};
+
+#include <iostream>
+
+void printBoard(const Board& board) {
+    std::cout << "Board:" << std::endl;
+    for (const auto& row : board) {
+        for (const auto& cell : row) {
+            std::cout << cell << ' ';
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+TEST_CASE("Test generateFullyFilledCorrectBoard") {
+    Board board = generateFullyFilledCorrectBoard();
+
+    CHECK(allTokensAreValid(board));
+    CHECK(full(board));
+}
+
+TEST_CASE("Test generateFullyFilledErroneousBoard") {
+    Board board = generateFullyFilledErroneousBoard();
+    CHECK(!noInvalidTokens(board));
+    CHECK(full(board));
+}
+
+TEST_CASE("Test generatePartiallyFilledCorrectBoard") {
+    Board board = generatePartiallyFilledCorrectBoard();
+
+    CHECK(noInvalidTokens(board));
+    CHECK(!full(board));
+}
+
+TEST_CASE("Test generatePartiallyFilledErroneousBoard") {
+    Board board = generatePartiallyFilledErroneousBoard();
+    CHECK(!noInvalidTokens(board));
+    CHECK(!full(board));
+}
+
+TEST_CASE("Test generateCorrectWinningBoard") {
+    Board board = generateCorrectWinningBoard();
+    CHECK((xWins(board) || oWins(board)));
+}
+
+
+auto property_allTokensAreValid = [](const Board& board) {
+    return allTokensAreValid(board) && full(board);
+};
+
+auto property_invalid = [](const Board& board) {
+    return !property_allTokensAreValid(board);
+};
+
+
+auto property_partially_correct = [](const Board& board) {
+    return noInvalidTokens(board) && !full(board);
+};
+
+
+auto property_full_partially_incorrect = [](const Board& board) {
+    return !full(board);
+};
+
+
+auto property_Win = [](const Board& board) {
+    return xWins(board) || oWins(board);
+};
+
+
+
+using Generator = const function<Board()>;
+using Property = const function<bool(const Board&)>;
+auto check_property = [](const Generator& generator, const Property& property, int numTests = 100) {
+    bool flag = true;
+    for (int i = 0; i < numTests; i++) {
+        Board board = generator();
+        bool isValid = property(board);
+        if (!isValid) flag = false;
+        CHECK(isValid);
+    }
+    return flag;
+};
+
+TEST_CASE("Properties") {
+    // 1
+    check_property(generateFullyFilledCorrectBoard, property_allTokensAreValid);
+
+    // 2
+    check_property(generateFullyFilledErroneousBoard, property_invalid);
+
+    // 3
+    check_property(generatePartiallyFilledCorrectBoard, property_partially_correct);
+
+    // 4
+    check_property(generatePartiallyFilledErroneousBoard, property_full_partially_incorrect);
+
+    // 5
+    check_property(generateCorrectWinningBoard, property_Win);
+}
